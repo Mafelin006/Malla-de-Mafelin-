@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Curricular Marketing</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f8fa;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #5a7d9a;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .semestre {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .materia {
+      padding: 10px;
+      margin-bottom: 8px;
+      background-color: #eef3f7;
+      border-left: 5px solid #a1c0dd;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+    .materia.aprobada {
+      background-color: #c4e3cb;
+      border-left-color: #72be84;
+      text-decoration: line-through;
+    }
+    .materia.bloqueada {
+      background-color: #f0e6e6;
+      border-left-color: #caa5a5;
+      cursor: not-allowed;
+    }
+    .materia.bloqueada::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 50%;
+      left: 105%;
+      transform: translateY(-50%);
+      background: #444;
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      display: none;
+    }
+    .materia.bloqueada:hover::after {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular - Marketing</h1>
+  <div id="malla"></div>
+  <script>
+    const materias = {
+      "Año 1": {
+        "Semestre 1": [
+          { nombre: "Fundamentos de economía", creditos: 4 },
+          { nombre: "matemáticas I", creditos: 4 },
+          { nombre: "Fundamentos de marketing", creditos: 4 },
+          { nombre: "Habilidades comunicativas", creditos: 2 },
+          { nombre: "Inglés intermedio alto", creditos: 2 }
+        ],
+        "Semestre 2": [
+          { nombre: "Matemáticas II", creditos: 4, requisitos: ["matemáticas I"] },
+          { nombre: "Contexto del marketing en las organizaciones", creditos: 2 },
+          { nombre: "Contabilidad Gerencial", creditos: 2 },
+          { nombre: "Gestión de productos y servicios en Marketing", creditos: 3 },
+          { nombre: "cultura I", creditos: 2 },
+          { nombre: "Inglés avanzado", creditos: 2, requisitos: ["Inglés intermedio alto"] }
+        ]
+      },
+      "Año 2": {
+        "Semestre 3": [
+          { nombre: "Estadística I", creditos: 4 },
+          { nombre: "Metodología de investigación", creditos: 3 },
+          { nombre: "Estrategias de Precio y presupuestos de marketing", creditos: 4, requisitos: ["Gestión de productos y servicios en Marketing", "Contabilidad Gerencial"] },
+          { nombre: "Factores sociales de consumo", creditos: 3 },
+          { nombre: "Inglés Proficiencia", creditos: 2, requisitos: ["Inglés avanzado"] }
+        ],
+        "Semestre 4": [
+          { nombre: "Estadística II", creditos: 4, requisitos: ["Estadística I"] },
+          { nombre: "Matemática Financiera", creditos: 3 },
+          { nombre: "Investigación de mercados cualitativa", creditos: 3, requisitos: ["Metodología de investigación"] },
+          { nombre: "Estrategias de distribución", creditos: 2, requisitos: ["Gestión de productos y servicios en Marketing"] },
+          { nombre: "Percepción y tendencias del consumidor", creditos: 2, requisitos: ["Factores sociales de consumo"] },
+          { nombre: "Inglés especializado I", creditos: 2, requisitos: ["Inglés Proficiencia"] }
+        ]
+      }
+      // Continua con los años 3, 4 y 5...
+    };
+
+    const aprobadas = JSON.parse(localStorage.getItem('materiasAprobadas') || '[]');
+
+    function guardarAprobadas() {
+      localStorage.setItem('materiasAprobadas', JSON.stringify(aprobadas));
+    }
+
+    function renderMalla() {
+      const container = document.getElementById("malla");
+      container.innerHTML = '';
+      for (const [año, semestres] of Object.entries(materias)) {
+        const titulo = document.createElement("h2");
+        titulo.textContent = año;
+        container.appendChild(titulo);
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        for (const [semestre, lista] of Object.entries(semestres)) {
+          const semDiv = document.createElement("div");
+          semDiv.className = "semestre";
+          semDiv.innerHTML = `<h3>${semestre}</h3>`;
+
+          for (const materia of lista) {
+            const div = document.createElement("div");
+            div.className = "materia";
+            div.textContent = `${materia.nombre} \n${materia.creditos} créditos`;
+
+            const bloqueada = materia.requisitos?.some(req => !aprobadas.includes(req));
+            if (bloqueada) {
+              div.classList.add("bloqueada");
+              div.setAttribute("data-tooltip", "Faltan: " + materia.requisitos.filter(req => !aprobadas.includes(req)).join(", "));
+            } else {
+              div.addEventListener("click", () => {
+                if (aprobadas.includes(materia.nombre)) {
+                  aprobadas.splice(aprobadas.indexOf(materia.nombre), 1);
+                } else {
+                  aprobadas.push(materia.nombre);
+                }
+                guardarAprobadas();
+                renderMalla();
+              });
+              if (aprobadas.includes(materia.nombre)) {
+                div.classList.add("aprobada");
+              }
+            }
+            semDiv.appendChild(div);
+          }
+          grid.appendChild(semDiv);
+        }
+        container.appendChild(grid);
+      }
+    }
+
+    renderMalla();
+  </script>
+</body>
+</html>
