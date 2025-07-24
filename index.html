@@ -2,139 +2,206 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Malla Curricular Marketing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malla Curricular - Marketing</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f6f1eb;
-      color: #4b3621;
+      background-color: #fdfaf6;
+      color: #4e342e;
       margin: 0;
-      padding: 20px;
-      position: relative;
+      padding: 2rem;
     }
     h1, h2, h3 {
-      text-align: center;
-      color: #5e473a;
+      color: #5d4037;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
     }
-    .semestre {
-      background: #fff8f0;
+    .course {
       border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 8px rgba(100, 70, 50, 0.1);
-    }
-    .materia {
-      padding: 10px;
-      margin-bottom: 8px;
-      background-color: #f1e4d1;
-      border-left: 5px solid #b08b66;
-      border-radius: 6px;
-      cursor: pointer;
-      position: relative;
+      padding: 1rem;
+      background-color: #d7ccc8;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
       transition: background-color 0.3s;
+      position: relative;
+      cursor: pointer;
     }
-    .materia.aprobada {
-      background-color: #d2c1aa;
-      border-left-color: #927b5d;
+    .course.completed {
+      background-color: #a1887f;
+      color: white;
       text-decoration: line-through;
     }
-    .materia.bloqueada {
-      background-color: #e4d3c4;
-      border-left-color: #a1866f;
+    .course.locked {
+      background-color: #f8bbd0;
+      color: #888;
       cursor: not-allowed;
     }
-    .materia.bloqueada::after {
+    .course.locked::after {
       content: attr(data-tooltip);
       position: absolute;
-      top: 50%;
-      left: 105%;
-      transform: translateY(-50%);
-      background: #4b3621;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      background: #5d4037;
       color: #fff;
-      padding: 5px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: nowrap;
-      display: none;
-      z-index: 10;
+      font-size: 0.8rem;
+      padding: 5px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      text-align: center;
     }
-    .materia.bloqueada:hover::after {
-      display: block;
-    }
-    .rose {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
+    .course.locked:hover::after {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
   <h1>Malla Curricular - Marketing</h1>
   <div id="malla"></div>
-  <img class="rose" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Rose_pink.svg/1024px-Rose_pink.svg.png" alt="Rosa palo de rosa">
+
   <script>
-    const materias = {
-      // contenido de materias aquí (no se repite en esta vista por brevedad)
-    };
-
-    const aprobadas = JSON.parse(localStorage.getItem('materiasAprobadas') || '[]');
-
-    function guardarAprobadas() {
-      localStorage.setItem('materiasAprobadas', JSON.stringify(aprobadas));
-    }
-
-    function renderMalla() {
-      const container = document.getElementById("malla");
-      container.innerHTML = '';
-      for (const [año, semestres] of Object.entries(materias)) {
-        const titulo = document.createElement("h2");
-        titulo.textContent = año;
-        container.appendChild(titulo);
-        const grid = document.createElement("div");
-        grid.className = "grid";
-
-        for (const [semestre, lista] of Object.entries(semestres)) {
-          const semDiv = document.createElement("div");
-          semDiv.className = "semestre";
-          semDiv.innerHTML = `<h3>${semestre}</h3>`;
-
-          for (const materia of lista) {
-            const div = document.createElement("div");
-            div.className = "materia";
-            div.textContent = `${materia.nombre} \n${materia.creditos} créditos`;
-
-            const bloqueada = materia.requisitos?.some(req => !aprobadas.includes(req));
-            if (bloqueada) {
-              div.classList.add("bloqueada");
-              div.setAttribute("data-tooltip", "Faltan: " + materia.requisitos.filter(req => !aprobadas.includes(req)).join(", "));
-            } else {
-              div.addEventListener("click", () => {
-                if (aprobadas.includes(materia.nombre)) {
-                  aprobadas.splice(aprobadas.indexOf(materia.nombre), 1);
-                } else {
-                  aprobadas.push(materia.nombre);
-                }
-                guardarAprobadas();
-                renderMalla();
-              });
-              if (aprobadas.includes(materia.nombre)) {
-                div.classList.add("aprobada");
-              }
-            }
-            semDiv.appendChild(div);
-          }
-          grid.appendChild(semDiv);
-        }
-        container.appendChild(grid);
+    const materias = [
+      {
+        anio: 1,
+        semestre: 1,
+        cursos: [
+          { nombre: 'Fundamentos de economía', creditos: 4 },
+          { nombre: 'Matemáticas I', creditos: 4 },
+          { nombre: 'Fundamentos de marketing', creditos: 4 },
+          { nombre: 'Habilidades comunicativas', creditos: 2 },
+          { nombre: 'Inglés intermedio alto', creditos: 2 }
+        ]
+      },
+      {
+        anio: 1,
+        semestre: 2,
+        cursos: [
+          { nombre: 'Matemáticas II', creditos: 4, requisitos: ['Matemáticas I'] },
+          { nombre: 'Contexto del marketing en las organizaciones', creditos: 2 },
+          { nombre: 'Contabilidad Gerencial', creditos: 2 },
+          { nombre: 'Gestión de productos y servicios en Marketing', creditos: 3 },
+          { nombre: 'Cultura I', creditos: 2 },
+          { nombre: 'Inglés avanzado', creditos: 2, requisitos: ['Inglés intermedio alto'] }
+        ]
+      },
+      {
+        anio: 2,
+        semestre: 3,
+        cursos: [
+          { nombre: 'Estadística I', creditos: 4 },
+          { nombre: 'Metodología de investigación', creditos: 3 },
+          { nombre: 'Estrategias de Precio y presupuestos de marketing', creditos: 4, requisitos: ['Gestión de productos y servicios en Marketing', 'Contabilidad Gerencial'] },
+          { nombre: 'Factores sociales de consumo', creditos: 3 },
+          { nombre: 'Inglés Proficiencia', creditos: 2, requisitos: ['Inglés avanzado'] }
+        ]
+      },
+      {
+        anio: 2,
+        semestre: 4,
+        cursos: [
+          { nombre: 'Estadística II', creditos: 4, requisitos: ['Estadística I'] },
+          { nombre: 'Matemática Financiera', creditos: 3 },
+          { nombre: 'Investigación de mercados cualitativa', creditos: 3, requisitos: ['Metodología de investigación'] },
+          { nombre: 'Estrategias de distribución', creditos: 2, requisitos: ['Gestión de productos y servicios en Marketing'] },
+          { nombre: 'Percepción y tendencias del consumidor', creditos: 2, requisitos: ['Factores sociales de consumo'] },
+          { nombre: 'Inglés especializado I', creditos: 2, requisitos: ['Inglés Proficiencia'] }
+        ]
+      },
+      {
+        anio: 3,
+        semestre: 5,
+        cursos: [
+          { nombre: 'Administración financiera', creditos: 3, requisitos: ['Matemática Financiera'] },
+          { nombre: 'Investigación de mercados cuantitativa', creditos: 3, requisitos: ['Metodología de investigación', 'Estadística II'] },
+          { nombre: 'Proceso de creación de valor', creditos: 4, requisitos: ['Percepción y tendencias del consumidor'] },
+          { nombre: 'Comercio en canales digitales', creditos: 2 },
+          { nombre: 'Cultura III', creditos: 2 },
+          { nombre: 'Inglés especializado II', creditos: 2, requisitos: ['Inglés especializado I'] }
+        ]
+      },
+      {
+        anio: 3,
+        semestre: 6,
+        cursos: [
+          { nombre: 'Gestión y valor de marca(branding)', creditos: 3 },
+          { nombre: 'Gerencia estratégica de marketing', creditos: 4, requisitos: ['Estrategias de distribución'] },
+          { nombre: 'Psicología del consumidor', creditos: 3 },
+          { nombre: 'Inteligencia de negocios para la toma de decisiones', creditos: 2 },
+          { nombre: 'Electiva I', creditos: 2 }
+        ]
+      },
+      {
+        anio: 4,
+        semestre: 7,
+        cursos: [
+          { nombre: 'Estrategias de comunicación y publicidad', creditos: 2, requisitos: ['Gestión y valor de marca(branding)'] },
+          { nombre: 'Diseño de planes de marketing', creditos: 4, requisitos: ['Gerencia estratégica de marketing'] },
+          { nombre: 'Planeación y ejecución de ventas', creditos: 3 },
+          { nombre: 'Métricas para la gestión del marketing', creditos: 3, requisitos: ['Gerencia estratégica de marketing'] },
+          { nombre: 'Electiva II', creditos: 2 }
+        ]
+      },
+      {
+        anio: 4,
+        semestre: 8,
+        cursos: [
+          { nombre: 'Investigación y estrategias de internacionalización', creditos: 3 },
+          { nombre: 'Juego Gerencial de mercados', creditos: 2, requisitos: ['Diseño de planes de marketing'] },
+          { nombre: 'Neuromarketing', creditos: 3 },
+          { nombre: 'Trade marketing y administración de categorías', creditos: 3, requisitos: ['Planeación y ejecución de ventas'] },
+          { nombre: 'Electiva III', creditos: 3 }
+        ]
+      },
+      {
+        anio: 5,
+        semestre: 9,
+        cursos: [
+          { nombre: 'Opción de grado', creditos: 2, requisitos: ['Investigación y estrategias de internacionalización', 'Juego Gerencial de mercados', 'Neuromarketing', 'Trade marketing y administración de categorías'] },
+          { nombre: 'Práctica profesional', creditos: 10, requisitos: ['Investigación y estrategias de internacionalización', 'Juego Gerencial de mercados', 'Neuromarketing', 'Trade marketing y administración de categorías'] },
+          { nombre: 'Electiva IV', creditos: 2 },
+          { nombre: 'Ética global, ética y sociedad', creditos: 2 }
+        ]
       }
+    ];
+
+    const estado = JSON.parse(localStorage.getItem("estadoMaterias") || "{}")
+
+    function crearMalla() {
+      const contenedor = document.getElementById("malla");
+      contenedor.innerHTML = "";
+      materias.forEach(({ anio, semestre, cursos }) => {
+        const bloque = document.createElement("div");
+        bloque.innerHTML = `<h2>Año ${anio} - Semestre ${semestre}</h2><div class="grid"></div>`;
+        const grid = bloque.querySelector(".grid");
+        cursos.forEach(materia => {
+          const bloqueada = materia.requisitos?.some(req => !estado[req]);
+          const div = document.createElement("div");
+          div.className = "course";
+          if (bloqueada) {
+            div.classList.add("locked");
+            div.dataset.tooltip = "Requiere: " + materia.requisitos.join(", ");
+          } else if (estado[materia.nombre]) {
+            div.classList.add("completed");
+          }
+          div.textContent = `${materia.nombre}\n${materia.creditos} créditos`;
+          div.onclick = () => {
+            if (div.classList.contains("locked")) return;
+            estado[materia.nombre] = !estado[materia.nombre];
+            localStorage.setItem("estadoMaterias", JSON.stringify(estado));
+            crearMalla();
+          };
+          grid.appendChild(div);
+        });
+        contenedor.appendChild(bloque);
+      });
     }
 
-    renderMalla();
+    crearMalla();
   </script>
 </body>
 </html>
